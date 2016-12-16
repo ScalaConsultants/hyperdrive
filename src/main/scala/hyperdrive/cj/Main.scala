@@ -23,11 +23,12 @@ object Main extends App {
 
   implicit val ec = actorSystem.dispatcher
 
-  val path = "foos"
-  val route = new CollectionJsonRoute[Foo](path) {
+  implicit val service = new CollectionJsonService[Foo] {
     override def getAll =
       Future.successful(Seq(Foo("one", 1), Foo("two", 2)))
   }
+  val path = "foos"
+  val route = new CollectionJsonRoute[Foo](path)
 
   Http().bindAndHandle(route.route, "localhost", 9080)
 }
