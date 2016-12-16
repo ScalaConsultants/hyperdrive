@@ -11,3 +11,9 @@ resolvers ++= Seq(
 )
 
 scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation", "-encoding", "utf8")
+
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-http" % "10.0.0", 
+  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0",
+  "com.chuusai" %% "shapeless" % "2.3.2"
+)
