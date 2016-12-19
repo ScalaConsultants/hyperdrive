@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import scala.concurrent.Future
+import hyperdrive.cj.DataValue._
 
 case class Foo(x: String, y: Int)
 // case class Bar(str: String, vInt: Int, vDouble: Double, boolean: Boolean)

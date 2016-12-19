@@ -11,27 +11,29 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
   }
   
   //TODO handle JsArray and JsObject
-  implicit object AnyFormat extends JsonFormat[Any] {
-    def write(obj:Any) = obj match {
-      case o: Int => JsNumber(o.asInstanceOf[Int])
-      case o: Boolean => JsBoolean(o.asInstanceOf[Boolean])
-      case null => JsNull
-      case o => JsString(o.toString())
+  implicit val dataValueFormat = new JsonFormat[DataValue] {
+    
+    override def write(obj: DataValue): JsValue = obj match {
+      case BigDecimalDataValue(v) => JsNumber(v)
+      case StringDataValue(v) => JsString(v)
+      case BooleanDataValue(v) => JsBoolean(v)
     }
-    def read(value:JsValue) = value match  {
-      case v: JsString => v.convertTo[String]
-      case v: JsNumber => v.convertTo[Int]
-      case v: JsBoolean => v.convertTo[Boolean]
+
+    override def read(json: JsValue): DataValue = json match {
+      case JsString(v) => StringDataValue(v)
+      case JsNumber(v) => BigDecimalDataValue(v)
+      case JsBoolean(v) => BooleanDataValue(v)
       case JsNull => null
     }
-  }  
+  }
+  
   implicit val queryDataFormat = jsonFormat2(QueryData)
   implicit val queryFormat = jsonFormat5(Query) 
   implicit val linkFormat = jsonFormat5(Link)
   implicit val dataFormat = jsonFormat3(Data)
   implicit val itemFormat = jsonFormat3(Item)
   implicit val errorFormat = jsonFormat3(Error)
-  implicit val templateFormat = jsonFormat1(Template)
+  implicit val templateFormat = jsonFormat1(Template.apply)
   implicit val collectionFormat = jsonFormat7(Collection)
   implicit val collectionJsonFormat = jsonFormat1(CollectionJson)
   
