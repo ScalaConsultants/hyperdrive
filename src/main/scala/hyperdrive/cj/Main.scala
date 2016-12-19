@@ -6,6 +6,10 @@ import akka.stream.ActorMaterializer
 import scala.concurrent.Future
 
 case class Foo(x: String, y: Int)
+
+class FooService {
+  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo("one", 1), Foo("two", 2)))
+}
 // case class Bar(str: String, vInt: Int, vDouble: Double, boolean: Boolean)
 
 // object Main extends App {
@@ -23,12 +27,13 @@ object Main extends App {
 
   implicit val ec = actorSystem.dispatcher
 
-  implicit val service = new CollectionJsonService[Foo] {
-    override def getAll =
-      Future.successful(Seq(Foo("one", 1), Foo("two", 2)))
+  implicit val serviceEvidence = new CollectionJsonService[Foo, FooService] {
+    override def getAll(service: FooService) = service.getAllFoos
   }
+
   val path = "foos"
-  val route = new CollectionJsonRoute[Foo](path)
+  val service = new FooService
+  val route = new CollectionJsonRoute[Foo, FooService](path, service)
 
   Http().bindAndHandle(route.route, "localhost", 9080)
 }
