@@ -15,11 +15,52 @@ case class Collection(
     
 case class Error(title: String, code: String, message: String)
 
-case class Template(data: Seq[Data])
+case class Template(data: Seq[Data]) {
+  def +:(data: Data): Template = this.copy(data +: this.data)
+}
+
+object Template {
+  def apply(): Template = new Template(Seq.empty)
+}
 
 case class Item(href: URI, data: Seq[Data] = Seq.empty, links: Seq[Link] = Seq.empty)
 
-case class Data(prompt: Option[String] = None, name: String, value: Option[Any] = None)
+case class Data(prompt: Option[String] = None, name: String, value: Option[DataValue] = None)
+
+sealed trait DataValue
+case class BigDecimalDataValue(value: BigDecimal) extends DataValue
+case class StringDataValue(value: String) extends DataValue
+case class BooleanDataValue(value: Boolean) extends DataValue
+
+trait DataValueConverter[T] {
+  def convert(value: T): DataValue
+}
+
+object DataValue {
+  implicit val IntConverter = new DataValueConverter[Int] {
+    override def convert(value: Int): DataValue = BigDecimalDataValue(value)
+  }
+
+  implicit val DoubleConverter = new DataValueConverter[Double] {
+    override def convert(value: Double): DataValue = BigDecimalDataValue(value)
+  }
+
+  implicit val LongConverter = new DataValueConverter[Long] {
+    override def convert(value: Long): DataValue = BigDecimalDataValue(value)
+  }
+
+  implicit val FloatConverter = new DataValueConverter[Float] {
+    override def convert(value: Float): DataValue = BigDecimalDataValue(BigDecimal.decimal(value))
+  }
+
+  implicit val StringConverter = new DataValueConverter[String] {
+    override def convert(value: String): DataValue = StringDataValue(value)
+  }
+
+  implicit val BooleanConverter = new DataValueConverter[Boolean] {
+    override def convert(value: Boolean): DataValue = BooleanDataValue(value)
+  }
+}
 
 case class Query(
     href: URI, 

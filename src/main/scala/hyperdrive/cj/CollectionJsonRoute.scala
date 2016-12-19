@@ -7,7 +7,7 @@ import hyperdrive.cj.MediaTypes._
 import java.net.URI
 import scala.concurrent.{ExecutionContext, Future}
 
-class CollectionJsonRoute[Ent : DataConverter : CollectionJsonService](basePath: String)(implicit val executionContext: ExecutionContext) { 
+class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : CollectionJsonService](basePath: String)(implicit val executionContext: ExecutionContext) { 
 
   lazy val route =
     (extractScheme & extractHost) { (sName, hName) =>
@@ -29,7 +29,9 @@ class CollectionJsonRoute[Ent : DataConverter : CollectionJsonService](basePath:
       val data = items map { item => 
         Item(href = baseHref, data = implicitly[DataConverter[Ent]].toData(item))
       }
-      CollectionJson(Collection(href = baseHref, items = data))
+      
+      val template = implicitly[TemplateConverter[Ent]].toTemplate
+      CollectionJson(Collection(href = baseHref, items = data, template = Some(template)))
     }
   }
 
