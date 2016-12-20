@@ -2,6 +2,27 @@ package hyperdrive.cj
 
 import java.net.URI
 
+object CollectionJson {
+
+  def getValue(dv: DataValue): String = dv match {
+    case BigDecimalDataValue(v) => v.toString
+    case StringDataValue(v) => v
+    case BooleanDataValue(v) => v.toString
+  }
+
+  def apply[Ent : DataConverter : TemplateConverter : IdProvider](baseHref: URI, items: Seq[Ent]): CollectionJson = { 
+    val data = items map { item => 
+      val idFieldName = implicitly[IdProvider[Ent]].idField
+      val data = implicitly[DataConverter[Ent]].toData(item)
+      val idValue = data.find(_.name == idFieldName).flatMap(_.value).get
+      Item(href = baseHref.resolve(getValue(idValue)), data = data)
+    }
+      
+    val template = implicitly[TemplateConverter[Ent]].toTemplate
+    CollectionJson(Collection(href = baseHref, items = data, template = Some(template)))
+  }
+}
+
 case class CollectionJson(collection: Collection)
 
 case class Collection(
