@@ -1,11 +1,10 @@
 package hyperdrive.cj
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.headers.RawHeader
+import java.net.URI
 import akka.http.scaladsl.server.Directives._
 import hyperdrive.cj.CollectionJsonProtocol._
-import hyperdrive.cj.MediaTypes._
-import java.net.URI
+import hyperdrive.cj.SprayCollectionJsonSupport._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class CollectionJsonRoute[Ent : DataConverter : TemplateConverter, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, Service]) { 
@@ -14,11 +13,9 @@ class CollectionJsonRoute[Ent : DataConverter : TemplateConverter, Service](base
     (extractScheme & extractHost) { (sName, hName) =>
         lazy val baseHref = new URI(s"$sName://$hName/$basePath")
         pathPrefix(basePath) {
-          respondWithHeader(RawHeader("Content-Type", "application/vnd.collection+json")) {
-            (get & pathEnd) {
-              complete {
-                getCollection(baseHref)
-              }
+          (get & pathEnd) {
+            complete {
+              getCollection(baseHref)
             }
           }
         }
