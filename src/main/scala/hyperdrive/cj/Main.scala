@@ -3,13 +3,16 @@ package hyperdrive.cj
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import scala.concurrent.Future
-import hyperdrive.cj.DataValue._
+import shapeless.tag._
+import DataValue._
 
-case class Foo(id: Long, x: String, y: Int)
+import scala.concurrent.Future
+
+case class Foo(id: Long @@ Id, x: String, y: Int)
 
 class FooService {
-  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo(1, "one", 11), Foo(2, "two", 22)))
+  import Taggers._
+  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo(1L, "one", 11), Foo(2L, "two", 22)))
 }
 
 object Main extends App {
@@ -21,10 +24,6 @@ object Main extends App {
 
   implicit val serviceEvidence = new CollectionJsonService[Foo, FooService] {
     override def getAll(service: FooService) = service.getAllFoos
-  }
-
-  implicit val idProviderEvidence = new IdProvider[Foo] {
-    override def idField = "id"
   }
 
   val path = "foos"

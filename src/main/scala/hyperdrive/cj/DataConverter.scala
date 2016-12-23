@@ -1,6 +1,7 @@
 package hyperdrive.cj
 
 import shapeless.labelled.FieldType
+import shapeless.tag.Tagged
 import shapeless.{::, HList, HNil, LabelledGeneric, Lazy, Witness}
 
 trait DataConverter[T] {
@@ -43,7 +44,8 @@ object TemplateConverter {
       Data(name = label, value = None) +: tailConverter.toTemplate
     }
 
-  implicit def genericConverter[T, Repr](implicit generic: LabelledGeneric.Aux[T, Repr],
-                                         encoder: Lazy[TemplateConverter[Repr]]) =
+  implicit def genericConverter[T, Repr <: HList, Left <: HList, Right <: HList](implicit generic: LabelledGeneric.Aux[T, Repr], 
+                                         partitionBySubType: PartitionBySubType.Aux[Repr, Tagged[Id], Left, Right],
+                                         encoder: Lazy[TemplateConverter[Right]]) =
     makeConverter[T](encoder.value.toTemplate)
 }
