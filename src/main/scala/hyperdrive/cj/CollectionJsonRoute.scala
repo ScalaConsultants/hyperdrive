@@ -7,7 +7,7 @@ import hyperdrive.cj.SprayCollectionJsonSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CollectionJsonRoute[Ent : DataConverter : TemplateConverter, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, Service]) { 
+class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdDataExtractor, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, Service]) { 
 
   lazy val route =
     (extractScheme & extractHost) { (sName, hName) =>
@@ -21,15 +21,7 @@ class CollectionJsonRoute[Ent : DataConverter : TemplateConverter, Service](base
         }
     }
 
-  private[this] def getCollection(baseHref: URI): Future[CollectionJson] = {
-    ev.getAll(service) map { items => 
-      val data = items map { item => 
-        Item(href = baseHref, data = implicitly[DataConverter[Ent]].toData(item))
-      }
-      
-      val template = implicitly[TemplateConverter[Ent]].toTemplate
-      CollectionJson(Collection(href = baseHref, items = data, template = Some(template)))
-    }
-  }
+  private[this] def getCollection(baseHref: URI): Future[CollectionJson] = 
+    ev.getAll(service).map(items => CollectionJson(baseHref, items))
 
 }

@@ -2,6 +2,28 @@ package hyperdrive.cj
 
 import java.net.URI
 
+object CollectionJson {
+
+  def getValue(dv: DataValue): String = dv match {
+    case BigDecimalDataValue(v) => v.toString
+    case StringDataValue(v) => v
+    case BooleanDataValue(v) => v.toString
+  }
+
+  def apply[Ent : DataConverter : TemplateConverter : IdDataExtractor](baseHref: URI, items: Seq[Ent]): CollectionJson = { 
+    val data = items map { item => 
+      val idFieldName = implicitly[IdDataExtractor[Ent]].getIdData(item).head.fieldName
+      val data = implicitly[DataConverter[Ent]].toData(item)
+      val idValue = data.find(_.name == idFieldName).flatMap(_.value).get
+      // quite ugly
+      Item(href = baseHref.resolve(baseHref.getPath + "/" + getValue(idValue)), data = data)
+    }
+      
+    val template = implicitly[TemplateConverter[Ent]].toTemplate
+    CollectionJson(Collection(href = baseHref, items = data, template = Some(template)))
+  }
+}
+
 case class CollectionJson(collection: Collection)
 
 case class Collection(
@@ -37,27 +59,42 @@ trait DataValueConverter[T] {
 }
 
 object DataValue {
-  implicit val IntConverter = new DataValueConverter[Int] {
+
+  import shapeless.tag._
+
+  implicit val intIdConverter = new DataValueConverter[Int @@ Id] {
+    override def convert(value: Int @@ Id): DataValue = BigDecimalDataValue(value)
+  }
+
+  implicit val longIdConverter = new DataValueConverter[Long @@ Id] {
+    override def convert(value: Long @@ Id): DataValue = BigDecimalDataValue(value)
+  }
+
+  implicit val stringIdConverter = new DataValueConverter[String @@ Id] {
+    override def convert(value: String @@ Id): DataValue = StringDataValue(value)
+  }
+  
+  implicit val intConverter = new DataValueConverter[Int] {
     override def convert(value: Int): DataValue = BigDecimalDataValue(value)
   }
 
-  implicit val DoubleConverter = new DataValueConverter[Double] {
+  implicit val doubleConverter = new DataValueConverter[Double] {
     override def convert(value: Double): DataValue = BigDecimalDataValue(value)
   }
 
-  implicit val LongConverter = new DataValueConverter[Long] {
+  implicit val longConverter = new DataValueConverter[Long] {
     override def convert(value: Long): DataValue = BigDecimalDataValue(value)
   }
 
-  implicit val FloatConverter = new DataValueConverter[Float] {
+  implicit val floatConverter = new DataValueConverter[Float] {
     override def convert(value: Float): DataValue = BigDecimalDataValue(BigDecimal.decimal(value))
   }
 
-  implicit val StringConverter = new DataValueConverter[String] {
+  implicit val stringConverter = new DataValueConverter[String] {
     override def convert(value: String): DataValue = StringDataValue(value)
   }
 
-  implicit val BooleanConverter = new DataValueConverter[Boolean] {
+  implicit val booleanConverter = new DataValueConverter[Boolean] {
     override def convert(value: Boolean): DataValue = BooleanDataValue(value)
   }
 }

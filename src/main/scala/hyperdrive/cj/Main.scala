@@ -3,23 +3,17 @@ package hyperdrive.cj
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import scala.concurrent.Future
-import hyperdrive.cj.DataValue._
+import shapeless.tag._
+import DataValue._
 
-case class Foo(x: String, y: Int)
+import scala.concurrent.Future
+
+case class Foo(id: Long @@ Id, x: String, y: Int)
 
 class FooService {
-  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo("one", 1), Foo("two", 2)))
+  import Taggers._
+  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo(1L, "one", 11), Foo(2L, "two", 22)))
 }
-// case class Bar(str: String, vInt: Int, vDouble: Double, boolean: Boolean)
-
-// object Main extends App {
-//   val converter = implicitly[DataConverter[Foo]]
-//   val data = Foo("cos", 5)
-//   val data2 = Bar("string jakis", 5, 1.5, true)
-//   println(converter.toData(data))
-//   println(implicitly[DataConverter[Bar]].toData(data2))
-// }
 
 object Main extends App {
 

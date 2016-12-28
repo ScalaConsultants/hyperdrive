@@ -10,7 +10,6 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
     def read(value:JsValue) = new URI(value.toString())
   }
   
-  //TODO handle JsArray and JsObject
   implicit val dataValueFormat = new JsonFormat[DataValue] {
     
     override def write(obj: DataValue): JsValue = obj match {
@@ -35,6 +34,6 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
   implicit val errorFormat = jsonFormat3(Error)
   implicit val templateFormat = jsonFormat1(Template.apply)
   implicit val collectionFormat = jsonFormat7(Collection)
-  implicit val collectionJsonFormat = jsonFormat1(CollectionJson)
+  implicit val collectionJsonFormat = jsonFormat1(CollectionJson.apply)
   
 }
