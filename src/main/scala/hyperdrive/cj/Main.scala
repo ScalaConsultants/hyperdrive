@@ -4,7 +4,9 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import shapeless.tag._
-import DataValue._
+import hyperdrive.cj.http.{CollectionJsonRoute, CollectionJsonService}
+import hyperdrive.cj.model.{Id, Taggers}
+import hyperdrive.cj.model.DataValue._
 
 import scala.concurrent.Future
 

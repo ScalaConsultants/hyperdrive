@@ -1,4 +1,4 @@
-package hyperdrive.cj
+package hyperdrive.cj.http
 
 import akka.http.scaladsl.model.MediaType
 import akka.http.scaladsl.model.HttpCharsets.`UTF-8`
