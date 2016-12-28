@@ -1,5 +1,6 @@
-package hyperdrive.cj
+package hyperdrive.cj.http
 
+import hyperdrive.cj.model._
 import java.net.URI
 import spray.json._
 

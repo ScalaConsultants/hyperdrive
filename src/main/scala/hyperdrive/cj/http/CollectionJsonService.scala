@@ -1,4 +1,4 @@
-package hyperdrive.cj
+package hyperdrive.cj.http
 
 import scala.concurrent.Future
 

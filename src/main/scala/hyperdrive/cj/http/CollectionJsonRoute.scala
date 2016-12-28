@@ -1,9 +1,10 @@
-package hyperdrive.cj
+package hyperdrive.cj.http
 
 import java.net.URI
 import akka.http.scaladsl.server.Directives._
-import hyperdrive.cj.CollectionJsonProtocol._
-import hyperdrive.cj.SprayCollectionJsonSupport._
+import hyperdrive.cj.http.CollectionJsonProtocol._
+import hyperdrive.cj.http.SprayCollectionJsonSupport._
+import hyperdrive.cj.model.{CollectionJson, DataConverter, IdDataExtractor, TemplateConverter}
 
 import scala.concurrent.{ExecutionContext, Future}
 

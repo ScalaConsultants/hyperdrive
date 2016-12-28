@@ -1,4 +1,4 @@
-package hyperdrive.cj
+package hyperdrive.cj.model
 
 import shapeless.tag.Tagged
 import shapeless.{HList, LabelledGeneric}

@@ -1,4 +1,4 @@
-package hyperdrive.cj
+package hyperdrive.cj.model
 
 import shapeless.labelled.FieldType
 import shapeless.{::, HList, HNil, Lazy, Witness}
