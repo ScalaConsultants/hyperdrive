@@ -10,6 +10,8 @@ trait IdExtractor[T] {
 }
 
 object IdExtractor {
+  
+  def apply[T](implicit idExtractor: IdExtractor[T]): Aux[T, idExtractor.Repr] = idExtractor
 
   type Aux[T, Repr0 <: HList] = IdExtractor[T] { type Repr = Repr0 }
   
