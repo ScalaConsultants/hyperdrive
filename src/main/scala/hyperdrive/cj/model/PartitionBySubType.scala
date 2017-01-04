@@ -16,6 +16,8 @@ object PartitionBySubType {
     type Left = Left0
     type Right = Right0
   }
+  
+  def apply[L <: HList, U](implicit partitionBySubType: PartitionBySubType[L, U]): Aux[L, U, partitionBySubType.Left, partitionBySubType.Right] = partitionBySubType
 
   implicit def hlistPartitionBySubTypeNil[U]: Aux[HNil, U, HNil, HNil] = new PartitionBySubType[HNil, U] {
     type Left = HNil
