@@ -17,6 +17,11 @@ class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdDataExtrac
           complete {
             getCollection(uri)
           }
+        } ~
+        (get & path(Segment)) { id =>
+          complete {
+            getSingle(uri, id)
+          }
         }
       }
     }
@@ -24,4 +29,9 @@ class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdDataExtrac
   private[this] def getCollection(uri: Uri): Future[CollectionJson] = 
     ev.getAll(service).map(items => CollectionJson(uri, items))
 
+  private[this] def getSingle(uri: Uri, id: String): Future[CollectionJson] = {
+    val basePath = uri.path.reverse.tail.reverse
+    val baseUri = uri.withPath(basePath)
+    ev.getById(service, id).map(item => CollectionJson(baseUri, item.toSeq))
+  }
 }

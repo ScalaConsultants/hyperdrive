@@ -14,7 +14,12 @@ case class Foo(id: Long @@ Id, x: String, y: Int)
 
 class FooService {
   import Taggers._
-  def getAllFoos: Future[Seq[Foo]] = Future.successful(Seq(Foo(1L, "one", 11), Foo(2L, "two", 22)))
+
+  val all = Seq(Foo(1L, "one", 11), Foo(2L, "two", 22))
+
+  def getAllFoos: Future[Seq[Foo]] = Future.successful(all)
+
+  def getById(id: Long): Future[Option[Foo]] = Future.successful(all.find(_.id == id))
 }
 
 object Main extends App {
@@ -26,6 +31,7 @@ object Main extends App {
 
   implicit val serviceEvidence = new CollectionJsonService[Foo, FooService] {
     override def getAll(service: FooService) = service.getAllFoos
+    override def getById(service: FooService, id: String) = service.getById(id.toLong)
   }
 
   val path = "foos"
