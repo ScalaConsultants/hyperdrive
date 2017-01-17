@@ -4,11 +4,11 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives._
 import hyperdrive.cj.http.CollectionJsonProtocol._
 import hyperdrive.cj.http.SprayCollectionJsonSupport._
-import hyperdrive.cj.model.{CollectionJson, DataConverter, IdDataExtractor, TemplateConverter}
+import hyperdrive.cj.model.{CollectionJson, DataConverter, IdNamesExtractor, TemplateConverter}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdDataExtractor, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, Service]) { 
+class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdNamesExtractor, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, Service]) { 
 
   lazy val route =
     extractUri { uri =>
