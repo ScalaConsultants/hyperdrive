@@ -13,7 +13,7 @@ object CollectionJson {
     case BooleanDataValue(v) => v.toString
   }
 
-  def apply[Ent : DataConverter : TemplateConverter : IdDataExtractor](uri: Uri, items: Seq[Ent]): CollectionJson = {
+  def apply[Ent : DataConverter : TemplateConverter : IdNamesExtractor](uri: Uri, items: Seq[Ent]): CollectionJson = {
     val baseUri = new URI(uri.toString)
 
     val itemPath: String => Path = id => 
@@ -23,7 +23,7 @@ object CollectionJson {
         uri.path / id
 
     val data = items map { item => 
-      val idFieldName = implicitly[IdDataExtractor[Ent]].getIdData(item).head.fieldName
+      val idFieldName = implicitly[IdNamesExtractor[Ent]].getIds.head.name
       val data = implicitly[DataConverter[Ent]].toData(item)
       val idValue = data.find(_.name == idFieldName).flatMap(_.value).get
       val itemUri = uri.withPath(itemPath(getValue(idValue)))
