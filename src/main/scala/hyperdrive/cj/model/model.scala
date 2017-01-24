@@ -5,6 +5,8 @@ import java.net.URI
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 
+import shapeless.{::, HNil, Generic}
+
 object CollectionJson {
 
   def getValue(dv: DataValue): String = dv match {
@@ -13,20 +15,20 @@ object CollectionJson {
     case BooleanDataValue(v) => v.toString
   }
 
+  def itemPath(baseUri: Uri, id: String): Path =
+    if (baseUri.path.endsWithSlash)
+      baseUri.path + id
+    else
+      baseUri.path / id
+
   def apply[Ent : DataConverter : TemplateConverter : IdNamesExtractor](uri: Uri, items: Seq[Ent]): CollectionJson = {
     val baseUri = new URI(uri.toString)
-
-    val itemPath: String => Path = id => 
-      if (uri.path.endsWithSlash)
-        uri.path + id
-      else
-        uri.path / id
 
     val data = items map { item => 
       val idFieldName = implicitly[IdNamesExtractor[Ent]].getIds.head.name
       val data = implicitly[DataConverter[Ent]].toData(item)
       val idValue = data.find(_.name == idFieldName).flatMap(_.value).get
-      val itemUri = uri.withPath(itemPath(getValue(idValue)))
+      val itemUri = uri.withPath(itemPath(uri, getValue(idValue)))
       Item(href = new URI(itemUri.toString), data = data)
     }
       
