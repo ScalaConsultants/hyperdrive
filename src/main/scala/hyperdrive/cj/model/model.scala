@@ -35,6 +35,12 @@ object CollectionJson {
     val template = implicitly[TemplateConverter[Ent]].toTemplate
     CollectionJson(Collection(href = baseUri, items = data, template = Some(template)))
   }
+
+  def withError(uri: Uri, error: Error): CollectionJson =
+    CollectionJson(Collection(href = new URI(uri.toString), error = Some(error)))
+
+  def withError(uri: Uri, message: String): CollectionJson = 
+    withError(uri, Error(message = Some(message)))
 }
 
 case class CollectionJson(collection: Collection)
@@ -48,7 +54,7 @@ case class Collection(
     template: Option[Template] = None,
     error: Option[Error] = None)
     
-case class Error(title: String, code: String, message: String)
+case class Error(title: Option[String] = None, code: Option[String] = None, message: Option[String])
 
 case class Template(data: Seq[Data]) {
   def +:(data: Data): Template = this.copy(data +: this.data)
@@ -68,47 +74,52 @@ case class StringDataValue(value: String) extends DataValue
 case class BooleanDataValue(value: Boolean) extends DataValue
 
 trait DataValueConverter[T] {
-  def convert(value: T): DataValue
+  def convert(value: T): Option[DataValue]
 }
 
 object DataValue {
 
   import shapeless.tag._
 
+  implicit def optionConverter[T]
+    (implicit enc: DataValueConverter[T]): DataValueConverter[Option[T]] = new DataValueConverter[Option[T]] {
+    override def convert(value: Option[T]): Option[DataValue] = value.flatMap(enc.convert)
+  }
+
   implicit val intIdConverter = new DataValueConverter[Int @@ Id] {
-    override def convert(value: Int @@ Id): DataValue = BigDecimalDataValue(value)
+    override def convert(value: Int @@ Id): Option[DataValue] = Some(BigDecimalDataValue(value))
   }
 
   implicit val longIdConverter = new DataValueConverter[Long @@ Id] {
-    override def convert(value: Long @@ Id): DataValue = BigDecimalDataValue(value)
+    override def convert(value: Long @@ Id): Option[DataValue] = Some(BigDecimalDataValue(value))
   }
 
   implicit val stringIdConverter = new DataValueConverter[String @@ Id] {
-    override def convert(value: String @@ Id): DataValue = StringDataValue(value)
+    override def convert(value: String @@ Id): Option[DataValue] = Some(StringDataValue(value))
   }
   
   implicit val intConverter = new DataValueConverter[Int] {
-    override def convert(value: Int): DataValue = BigDecimalDataValue(value)
+    override def convert(value: Int): Option[DataValue] = Some(BigDecimalDataValue(value))
   }
 
   implicit val doubleConverter = new DataValueConverter[Double] {
-    override def convert(value: Double): DataValue = BigDecimalDataValue(value)
+    override def convert(value: Double): Option[DataValue] = Some(BigDecimalDataValue(value))
   }
 
   implicit val longConverter = new DataValueConverter[Long] {
-    override def convert(value: Long): DataValue = BigDecimalDataValue(value)
+    override def convert(value: Long): Option[DataValue] = Some(BigDecimalDataValue(value))
   }
 
   implicit val floatConverter = new DataValueConverter[Float] {
-    override def convert(value: Float): DataValue = BigDecimalDataValue(BigDecimal.decimal(value))
+    override def convert(value: Float): Option[DataValue] = Some(BigDecimalDataValue(BigDecimal.decimal(value)))
   }
 
   implicit val stringConverter = new DataValueConverter[String] {
-    override def convert(value: String): DataValue = StringDataValue(value)
+    override def convert(value: String): Option[DataValue] = Some(StringDataValue(value))
   }
 
   implicit val booleanConverter = new DataValueConverter[Boolean] {
-    override def convert(value: Boolean): DataValue = BooleanDataValue(value)
+    override def convert(value: Boolean): Option[DataValue] = Some(BooleanDataValue(value))
   }
 }
 

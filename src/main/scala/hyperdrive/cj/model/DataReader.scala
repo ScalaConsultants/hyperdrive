@@ -1,5 +1,8 @@
 package hyperdrive.cj.model
 
+import cats.data.ValidatedNel
+import cats.data.Validated._
+import cats.implicits._
 import shapeless._
 import shapeless.labelled._
 
@@ -9,6 +12,10 @@ trait DataValueReader[T] {
 
 object DataValueReader {
   
+  // implicit def optionDVR[T](implicit enc: DataValueReader[T]): DataValueReader[Option[T]] = new DataValueReader[Option[T]] {
+  //   def readDataValue(value: DataValue): Option[Option[T]] = Some(enc.readDataValue(value))
+  // }
+
   implicit val stringDVR: DataValueReader[String] = new DataValueReader[String] {
     def readDataValue(value: DataValue): Option[String] = value match {
       case StringDataValue(s) => Some(s)
@@ -70,11 +77,11 @@ object DataReader {
     def readData(values: Seq[Data]): Option[FieldType[K, V] :: L] = {
       
       val fieldName = wit.value.name
+
+      val getValue: Seq[Data] => Option[DataValue] = values => values.find(_.name == fieldName).flatMap(_.value)
+
       for {
-        hd <- values.collect {
-            case Data(_, name, Some(dv)) if name == fieldName =>
-              dv
-          }.flatMap(dvr.readDataValue(_)).headOption
+        hd <- getValue(values).flatMap(dvr.readDataValue(_)).headOption
         tl <- tail.readData(values)
       } yield hd.asInstanceOf[FieldType[K, V]] :: tl
     }
@@ -82,8 +89,6 @@ object DataReader {
   
   implicit def genDR[T, Repr <: HList](implicit lg: LabelledGeneric.Aux[T, Repr],
                                        dr: DataReader[Repr]): DataReader[T] = new DataReader[T] {
-    def readData(values: Seq[Data]): Option[T] = {
-      dr.readData(values).map(lg.from)
-    }                                       
+    def readData(values: Seq[Data]): Option[T] = dr.readData(values).map(lg.from)                         
   }
 }

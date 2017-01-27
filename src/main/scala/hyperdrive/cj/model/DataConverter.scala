@@ -19,7 +19,7 @@ object DataConverter {
                                                           tailConverter: DataConverter[L]) =
     makeConverter[FieldType[K, V] :: L]{ hList =>
       val label = keyWitness.value.name
-      Data(name = label, value = Some(headConverter.convert(hList.head))) +: tailConverter.toData(hList.tail)
+      Data(name = label, value = headConverter.convert(hList.head)) +: tailConverter.toData(hList.tail)
     }
 
   implicit def genericConverter[T, Repr](implicit generic: LabelledGeneric.Aux[T, Repr], 

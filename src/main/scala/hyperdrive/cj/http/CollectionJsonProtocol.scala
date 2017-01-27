@@ -23,7 +23,6 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
       case JsString(v) => StringDataValue(v)
       case JsNumber(v) => BigDecimalDataValue(v)
       case JsBoolean(v) => BooleanDataValue(v)
-      case JsNull => null
     }
   }
   
