@@ -17,7 +17,7 @@ import spray.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CollectionJsonRoute[Ent : DataConverter : TemplateConverter : IdNamesExtractor, NewEnt : DataReader, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, NewEnt, Service]) { 
+class CollectionJsonRoute[Ent : DataConverter : IdNamesExtractor, NewEnt : DataReader : TemplateConverter, Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, NewEnt, Service]) { 
 
   lazy val route =
     extractUri { uri =>

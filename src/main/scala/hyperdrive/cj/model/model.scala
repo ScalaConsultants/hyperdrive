@@ -21,7 +21,7 @@ object CollectionJson {
     else
       baseUri.path / id
 
-  def apply[Ent : DataConverter : TemplateConverter : IdNamesExtractor](uri: Uri, items: Seq[Ent]): CollectionJson = {
+  def apply[Ent : DataConverter : IdNamesExtractor, NewEnt : TemplateConverter](uri: Uri, items: Seq[Ent]): CollectionJson = {
     val baseUri = new URI(uri.toString)
 
     val data = items map { item => 
@@ -32,7 +32,7 @@ object CollectionJson {
       Item(href = new URI(itemUri.toString), data = data)
     }
       
-    val template = implicitly[TemplateConverter[Ent]].toTemplate
+    val template = implicitly[TemplateConverter[NewEnt]].toTemplate
     CollectionJson(Collection(href = baseUri, items = data, template = Some(template)))
   }
 
