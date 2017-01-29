@@ -23,7 +23,6 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
       case JsString(v) => StringDataValue(v)
       case JsNumber(v) => BigDecimalDataValue(v)
       case JsBoolean(v) => BooleanDataValue(v)
-      case JsNull => null
     }
   }
   
@@ -37,4 +36,5 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
   implicit val collectionFormat = jsonFormat7(Collection)
   implicit val collectionJsonFormat = jsonFormat1(CollectionJson.apply)
   
+  implicit val addEntityRequestFormat = jsonFormat1(AddEntityRequest)
 }
