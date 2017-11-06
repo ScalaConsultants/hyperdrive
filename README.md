@@ -17,7 +17,7 @@ This is work in progress - not intended for anything other than learning and exp
 
 ### Example:
 
-`sbt run`
+`sbt "project example" run`
 
 1. Get list of resources.
 

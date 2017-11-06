@@ -15,10 +15,10 @@ scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation", "-encoding", "ut
 //needed for Cats
 scalacOptions += "-Ypartial-unification"
 
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-http" % "10.0.10", 
-  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.10",
-  "org.typelevel" %% "cats-core" % "1.0.0-RC1",
-  "com.chuusai" %% "shapeless" % "2.3.2",
-  "org.scalatest" %% "scalatest" % "3.0.4" % "test"
-)
+lazy val hyperdrive = (project in file("."))
+  .settings(
+    libraryDependencies ++= Dependencies.common
+  )
+
+lazy val example = (project in file("example"))
+  .dependsOn(hyperdrive)
