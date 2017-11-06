@@ -2,7 +2,7 @@ name := "hyperdrive"
 
 version := "0.1"
 
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.4"
 
 resolvers ++= Seq(
   "snapshots"           at "http://oss.sonatype.org/content/repositories/snapshots",
@@ -12,10 +12,13 @@ resolvers ++= Seq(
 
 scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation", "-encoding", "utf8")
 
-libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-http" % "10.0.0", 
-  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0",
-  "org.typelevel" %% "cats" % "0.9.0",
-  "com.chuusai" %% "shapeless" % "2.3.2",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
-)
+//needed for Cats
+scalacOptions += "-Ypartial-unification"
+
+lazy val hyperdrive = (project in file("."))
+  .settings(
+    libraryDependencies ++= Dependencies.common
+  )
+
+lazy val example = (project in file("example"))
+  .dependsOn(hyperdrive)
