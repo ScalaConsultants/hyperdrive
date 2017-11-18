@@ -37,4 +37,5 @@ object CollectionJsonProtocol extends DefaultJsonProtocol {
   implicit val collectionJsonFormat = jsonFormat1(CollectionJson.apply)
   
   implicit val addEntityRequestFormat = jsonFormat1(AddEntityRequest)
+  implicit val updateEntityRequestFormat = jsonFormat1(UpdateEntityRequest)
 }

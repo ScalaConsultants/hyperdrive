@@ -13,7 +13,7 @@ import hyperdrive.cj.model.DataValue._
 import scala.concurrent.Future
 
 case class Foo(id: Long @@ Id, x: String, y: Int)
-case class NewFoo(x: String, y: Int)
+case class FooData(x: String, y: Int)
 
 class FooService {
   import Taggers._
@@ -22,7 +22,7 @@ class FooService {
 
   def maxId = all.map(_.id).reduceLeft(_ max _)
 
-  def add(newFoo: NewFoo): Future[String] = {
+  def add(newFoo: FooData): Future[String] = {
     val id = maxId + 1
     all = Foo(id, newFoo.x, newFoo.y) +: all
     Future.successful(id.toString)
@@ -31,6 +31,16 @@ class FooService {
   def getAllFoos: Future[Seq[Foo]] = Future.successful(all)
 
   def getById(id: Long): Future[Option[Foo]] = Future.successful(all.find(_.id == id))
+
+  def update(id: Long, data: FooData): Future[Option[Foo]] = {
+    val (fooSeq, rest) = all.partition(_.id == id)
+    val res = fooSeq.headOption.map { foo =>
+      val newFoo = foo.copy(x = data.x, y = data.y)
+      all = newFoo +: all
+      newFoo
+    }
+    Future.successful(res)
+  }
 }
 
 object Main extends App {
@@ -40,16 +50,19 @@ object Main extends App {
 
   implicit val ec = actorSystem.dispatcher
 
-  implicit val serviceEvidence = new CollectionJsonService[Foo, NewFoo, FooService] {
-    override def add(service: FooService, newEnt: NewFoo) = service.add(newEnt)
+  implicit val serviceEvidence = new CollectionJsonService[Foo, FooData, FooService] {
+    override def add(service: FooService, newEnt: FooData) = service.add(newEnt)
     override def getAll(service: FooService) = service.getAllFoos
     override def getById(service: FooService, id: String) = service.getById(id.toLong)
+    override def update(service: FooService, id: String, fooData: FooData) = service.update(id.toLong, fooData)
   }
 
   //implicit val fooDataReader = DataReader[Foo]
   val path = "foos"
   val service = new FooService
-  val route = new CollectionJsonRoute[Foo, NewFoo, FooService](path, service)
+  val route = new CollectionJsonRoute[Foo, FooData, FooService](path, service)
 
   Http().bindAndHandle(route.route, "localhost", 9080)
+
+  println("Running Collection+JSON example at http://localhost:9080/foos")
 }

@@ -6,4 +6,5 @@ trait CollectionJsonService[Ent, NewEnt, Service] {
   def add(service: Service, newEnt: NewEnt): Future[String]
   def getAll(service: Service): Future[Seq[Ent]]
   def getById(service: Service, id: String): Future[Option[Ent]]
+  def update(service: Service, id: String, ent: NewEnt): Future[Option[Ent]]
 }
