@@ -17,9 +17,9 @@ import spray.json._
 import scala.concurrent.{ExecutionContext, Future}
 
 class CollectionJsonRoute[
-    Ent : DataConverter : IdNamesExtractor, 
-    NewEnt : DataReader : TemplateConverter, 
-    Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[Ent, NewEnt, Service]) { 
+    FullItemData : DataConverter : IdNamesExtractor, 
+    PartItemData : DataReader : TemplateConverter, 
+    Service](basePath: String, service: Service)(implicit executionContext: ExecutionContext, ev : CollectionJsonService[FullItemData, PartItemData, Service]) { 
 
   lazy val route =
     extractUri { uri =>
@@ -29,7 +29,7 @@ class CollectionJsonRoute[
             getCollection(uri)
           }
         } ~
-        (post & pathEnd & entity(as[AddEntityRequest])) { req =>
+        (post & pathEnd & entity(as[AddItemRequest])) { req =>
           complete {
             add(uri, req.template).map { validatedLocation => 
               errorResponseOr(
@@ -45,14 +45,14 @@ class CollectionJsonRoute[
             getSingle(uri, id)
           }
         } ~
-        (put & path(Segment) & entity(as[UpdateEntityRequest])) { (id, req) =>
+        (put & path(Segment) & entity(as[UpdateItemRequest])) { (id, req) =>
           complete {
             val res = update(id, req.template)
             res.map { validatedItem => 
               errorResponseOr(
                 uri,
                 validatedItem, 
-                (item: Ent) => HttpResponse(OK)
+                (item: FullItemData) => HttpResponse(OK)
               )
             }
           }
@@ -72,11 +72,11 @@ class CollectionJsonRoute[
 
   private[this] def add(uri: Uri, template: Template): Future[ValidatedNel[String, Uri]] = {//Future.successful("1234")
     val resultT: OptionT[Future, Uri] = for {
-      newEnt <- OptionT(Future.successful(implicitly[DataReader[NewEnt]].readData(template.data)))
-      id <- OptionT.liftF(ev.add(service, newEnt))
+      newItem <- OptionT(Future.successful(implicitly[DataReader[PartItemData]].readData(template.data)))
+      id <- OptionT.liftF(ev.add(service, newItem))
     } yield uri.withPath(CollectionJson.itemPath(uri, id))
 
-    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of("Could not create entity.")))
+    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of("Could not create a new item.")))
   }
 
   private[this] def getCollection(uri: Uri): Future[CollectionJson] = 
@@ -88,13 +88,13 @@ class CollectionJsonRoute[
     ev.getById(service, id).map(item => CollectionJson(baseUri, item.toSeq))
   }
 
-  private[this] def update(id: String, template: Template): Future[ValidatedNel[String, Ent]] = {//Future.successful("1234")
-    val resultT: OptionT[Future, Ent] = for {
-      newEnt <- OptionT(Future.successful(implicitly[DataReader[NewEnt]].readData(template.data)))
-      updatedItem <- OptionT(ev.update(service, id, newEnt))
+  private[this] def update(id: String, template: Template): Future[ValidatedNel[String, FullItemData]] = {
+    val resultT: OptionT[Future, FullItemData] = for {
+      itemData <- OptionT(Future.successful(implicitly[DataReader[PartItemData]].readData(template.data)))
+      updatedItem <- OptionT(ev.update(service, id, itemData))
     } yield updatedItem
 
-    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of("Could not update entity.")))
+    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of(s"Could not update the item with id=$id.")))
   }
 
 }
