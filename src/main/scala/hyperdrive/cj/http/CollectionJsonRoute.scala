@@ -42,7 +42,7 @@ class CollectionJsonRoute[
         } ~
         (get & path(Segment)) { id =>
           complete {
-            getSingle(uri, id)
+            getItem(uri, id)
           }
         } ~
         (put & path(Segment) & entity(as[UpdateItemRequest])) { (id, req) =>
@@ -76,13 +76,15 @@ class CollectionJsonRoute[
       id <- OptionT.liftF(ev.add(service, newItem))
     } yield uri.withPath(CollectionJson.itemPath(uri, id))
 
-    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of("Could not create a new item.")))
+    resultT.value.map { opt => 
+      Validated.fromOption(opt, NonEmptyList.of("Could not create a new item."))
+    }
   }
 
   private[this] def getCollection(uri: Uri): Future[CollectionJson] = 
     ev.getAll(service).map(items => CollectionJson(uri, items))
 
-  private[this] def getSingle(uri: Uri, id: String): Future[CollectionJson] = {
+  private[this] def getItem(uri: Uri, id: String): Future[CollectionJson] = {
     val basePath = uri.path.reverse.tail.reverse
     val baseUri = uri.withPath(basePath)
     ev.getById(service, id).map(item => CollectionJson(baseUri, item.toSeq))
@@ -94,7 +96,9 @@ class CollectionJsonRoute[
       updatedItem <- OptionT(ev.update(service, id, itemData))
     } yield updatedItem
 
-    resultT.value.map(opt => Validated.fromOption(opt, NonEmptyList.of(s"Could not update the item with id=$id.")))
+    resultT.value.map { opt =>
+      Validated.fromOption(opt, NonEmptyList.of(s"Could not update the item with id=$id."))
+    }
   }
 
 }
