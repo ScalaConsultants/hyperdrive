@@ -1,8 +1,5 @@
 package hyperdrive.cj.model
 
-import cats.data.ValidatedNel
-import cats.data.Validated._
-import cats.implicits._
 import shapeless._
 import shapeless.labelled._
 
