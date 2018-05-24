@@ -2,7 +2,7 @@ import sbt._
 
 object BuildSettings {
 
-  val akkaHttpVersion = "10.1.0"
+  val akkaHttpVersion = "10.1.1"
 
 }
 
